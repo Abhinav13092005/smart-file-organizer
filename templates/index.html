@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Smart File Organizer</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+
+    <div class="container">
+
+        <h1>📂 Smart File Organizer</h1>
+
+        <p class="subtitle">
+            Upload your files and organize them by category
+        </p>
+
+        <div class="upload-box">
+
+            <h3>Select Your Files</h3>
+
+            <input
+                type="file"
+                id="fileInput"
+                multiple="multiple"
+                name="files"
+            >
+
+            <p id="selectedFiles">No files selected</p>
+
+        </div>
+
+        <button onclick="organizeFiles()">
+            Organize Files
+        </button>
+
+        <p id="message"></p>
+
+        <div class="categories">
+
+            <div class="category">
+                🖼️ Images
+                <strong id="imagesCount">0</strong>
+            </div>
+
+            <div class="category">
+                📄 Documents
+                <strong id="documentsCount">0</strong>
+            </div>
+
+            <div class="category">
+                🎵 Audio
+                <strong id="audioCount">0</strong>
+            </div>
+
+            <div class="category">
+                🎬 Videos
+                <strong id="videosCount">0</strong>
+            </div>
+
+            <div class="category">
+                📦 Archives
+                <strong id="archivesCount">0</strong>
+            </div>
+
+            <div class="category">
+                📁 Others
+                <strong id="othersCount">0</strong>
+            </div>
+
+        </div>
+
+    </div>
+
+    <script>
+
+        const fileInput = document.getElementById("fileInput");
+        const selectedFiles = document.getElementById("selectedFiles");
+
+        fileInput.addEventListener("change", function () {
+
+            if (fileInput.files.length === 0) {
+
+                selectedFiles.innerText = "No files selected";
+
+            } else {
+
+                selectedFiles.innerText =
+                    fileInput.files.length + " files selected";
+
+            }
+
+        });
+
+
+        async function organizeFiles() {
+
+            const message =
+                document.getElementById("message");
+
+            const files = fileInput.files;
+
+            if (files.length === 0) {
+
+                message.innerText =
+                    "Please select some files first.";
+
+                return;
+            }
+
+            const formData = new FormData();
+
+            for (const file of files) {
+
+                formData.append("files", file);
+
+            }
+
+            message.innerText =
+                "Analyzing files...";
+
+            try {
+
+                const response =
+                    await fetch("/organize", {
+                        method: "POST",
+                        body: formData
+                    });
+
+                const result =
+                    await response.json();
+
+                message.innerText =
+                    result.message;
+
+                document.getElementById("imagesCount").innerText =
+                    result.categories.Images;
+
+                document.getElementById("documentsCount").innerText =
+                    result.categories.Documents;
+
+                document.getElementById("audioCount").innerText =
+                    result.categories.Audio;
+
+                document.getElementById("videosCount").innerText =
+                    result.categories.Videos;
+
+                document.getElementById("archivesCount").innerText =
+                    result.categories.Archives;
+
+                document.getElementById("othersCount").innerText =
+                    result.categories.Others;
+
+            } catch (error) {
+
+                message.innerText =
+                    "Something went wrong.";
+
+                console.error(error);
+            }
+        }
+
+    </script>
+
+</body>
+</html>
